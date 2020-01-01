@@ -1,0 +1,1 @@
+xvic -basic .\basic-vic20.bin -kernal kernal-vic20.bin
