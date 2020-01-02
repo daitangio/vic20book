@@ -1,3 +1,4 @@
+all: combined_ROMs.bin 
 
 combined_ROMs.bin: combined_ROMs.asm
 	xa -M -o $@ -l $(basename $@).sym $<
@@ -15,4 +16,7 @@ test: combined_ROMs.bin
 	diff $< original.bin
 
 clean:
-	rm -f combined_ROMs.bin combined_ROMs.sym combined_ROMs.inc
+	rm -f combined_ROMs.bin combined_ROMs.sym combined_ROMs.inc basic-vic20.bin kernal-vic20.bin
+
+myFirstCart.prg: code/myFirstCart.asm
+	xa -M -o $@ -l $(basename $@).sym $<
