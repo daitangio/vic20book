@@ -4225,7 +4225,7 @@ LAB_CE80
 ; get value from line
 
 EVAL
-	JMP	(IEVAL)			; get arithmetic element
+	JMP	(IEVAL)			; get arithmetic element GG CROSS .,AE83 6C 0A 03 JMP ($030A) 
 
 
 ;***********************************************************************************;
@@ -4238,7 +4238,7 @@ FEVAL
 LAB_CE8A
 	JSR	CHRGET			; increment and scan memory
 	BCS	LAB_CE92		; if not numeric character continue
-
+; GG Entry point for PATCH
 ; else numeric string found (e.g. 123)
 
 LAB_CE8F
@@ -8538,7 +8538,7 @@ BSAVE
 
 BVERIF
 	LDA	#$01			; flag verify
-	.byte	$2C			; makes next line BIT $00A9
+	.byte	$2C			; makes next line BIT $00A9 (GG: SKIP NEXT LINE)
 
 
 ;***********************************************************************************;
@@ -8942,7 +8942,8 @@ COLDBA
 
 ; page 0 initialisation table from CHRGET
 ; increment and scan memory
-
+; GG Seems copied on $73  See 'copy block from CGIMAG to CHRGET' are $1C Bytes
+; $ 73+1C = 8F > Quasi a ridosso della fine della zero
 CGIMAG
 	INC	CHRGOT+1		; increment BASIC execute pointer low byte
 	BNE	LAB_E38D		; branch if no carry
@@ -9072,8 +9073,9 @@ FREMSG
 ;
 BFREMSG
 	.byte	" BYTES FREE",$0D,$00
-BASMSG
-	.byte	$93,"**** CBM BASIC V2 ****",$0D,$00
+
+; GG contains BASMSG 
+#include "extensions/version.asm"
 
 
 ;***********************************************************************************;
@@ -16027,7 +16029,7 @@ SCREEN
 ; the cursor on the screen into the .X and .Y registers. .X is the column number of
 ; the cursor location and .Y is the row number of the cursor. A call with the carry
 ; bit clear moves the cursor to the position determined by the .X and .Y registers.
-
+; GG EXPLORE!!!
 PLOT
 	JMP	FPLOT			; read/set X,Y cursor position
 
