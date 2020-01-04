@@ -1,4 +1,4 @@
-all: combined_ROMs.bin 
+all: combined_ROMs.bin myFirstCart.prg
 
 combined_ROMs.bin: combined_ROMs.asm
 	xa -M -o $@ -l $(basename $@).sym $<
