@@ -10,7 +10,7 @@ PRTSTR=$cb1e
 ; Dummy header
 .byte $00, $A0
 
-; The followinfg sequence is isphired by OMEGA RACE and push boot to A009
+; The following sequence is ispired by OMEGA RACE and push boot to A009
 * = $A000
 .byte $09, $A0, $8D, $B4, $41, $30, $C3, $C2, $CD
 

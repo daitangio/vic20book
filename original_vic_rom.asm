@@ -4,6 +4,8 @@
 ; The almost completely commented VIC 20 ROM disassembly. V1.01 Lee Davison 2005-2012.
 ; With enhancements by Simon Rowe <srowe@mose.org.uk>.
 
+; Extra comments by Giovanni Giorgi
+
 ; This is a bit correct assembly listing for the VIC 20 BASIC and KERNAL ROMs as one 16K
 ; ROM. You should be able to assemble the VIC ROMs from this with most 6502 assemblers,
 ; as no macros or 'special' features were used. This has been tested using Michal
