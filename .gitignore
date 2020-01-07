@@ -1,6 +1,7 @@
 basic-vic20.bin
-combined_ROMs.bin
-combined_ROMs.sym
+original_vic_rom.bin
+original_vic_rom.sym
 kernal-vic20.bin
-myFirstCart.prg
-myFirstCart.sym
+my*Cart.prg
+my*Cart.sym
+original_vic_rom.inc
