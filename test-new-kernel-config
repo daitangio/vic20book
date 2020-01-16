@@ -1,0 +1,14 @@
+[VIC20]
+InitialDefaultDir="C:\Users\jj\code\vic20roms"
+Window0Xpos=26
+Window0Ypos=26
+SoundDeviceName="dx"
+SoundBufferSize=100
+VICVideoCache=1
+SidEngine=1
+SidModel=0
+ETHERNET_DISABLED=1
+ETHERNETCARTBase=38912
+Acia1Base=38912
+KernalName="kernal-vic20.bin"
+; BasicName=".\basic-vic20.bin"

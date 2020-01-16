@@ -17,7 +17,8 @@ original_vic_rom.inc: original_vic_rom.sym
 	awk -F, '$$1 !~ "^LAB_" {print $$2, $$1}' $< | sort -n | awk '{printf "%12s = $$%s\n",  $$2, substr($$1,3)}' >$@
 
 test: original_vic_rom.bin
-	diff $< original.bin
+	# diff $< original.bin
+	xvic.exe  -config test-new-kernel-config  test.d64
 
 clean:
 	rm -f original_vic_rom.bin original_vic_rom.sym original_vic_rom.inc basic-vic20.bin kernal-vic20.bin *.prg

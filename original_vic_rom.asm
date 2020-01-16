@@ -1679,12 +1679,17 @@ ERRORSTR
 INSTR
 	.byte	" IN ",$00
 READYSTR
-	.byte	$0D,$0A,"READY.",$0D,$0A,$00
+	.byte	$0D,$0A,":)",$0D,$0A,$00
 CRLFBRK
 	.byte	$0D,$0A
 BREAKSTR
 	.byte	"BREAK",$00
 
+REALIGN
+	.byte $00
+
+; GG REALIGN KERNAL
+.dsb 3,$00
 
 ;***********************************************************************************;
 ;
@@ -9113,7 +9118,7 @@ FREMSG
 BFREMSG
 	.byte	" BYTES FREE",$0D,$00
 BASMSG
-	.byte	$93,"**** CBM BASIC V2 ****",$0D,$00
+	.byte	$93,"*** CBM BAZIC V1.1 ***",$0D,$00
 
 
 ;***********************************************************************************;
