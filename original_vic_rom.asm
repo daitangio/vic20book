@@ -18,6 +18,8 @@
 ; text files, pictures and other documents.
 
 
+
+
 ;***********************************************************************************;
 ;***********************************************************************************;
 ;
@@ -280,6 +282,37 @@ EXPCNT	= $5E			; exponent count byte
 ;	  $5F			; FAC temp store
 TMPPTR	= $5F
 ;	  $60			; block start high byte
+
+
+/* GG About floating point
+Take a look at https://www.c64-wiki.com/wiki/Floating_point_arithmetic
+for a full explanation
+
+Two regions in zeropage are allocated for working with floating point numbers:
+
+One is called FAC, for Floating Point Accumulator:
+ Address 97/$61 is the exponent byte
+ Addresses 98–101/$62–$65 hold the four-byte (32 bit) mantissa
+ Address 102/$66 stores the sign in it's most significant bit; 0 for positive, $FF (-1) for negative.
+ Address 112/$70 contains rounding bits for intermediate calculations.
+
+The other is called ARG, for Floating Point ARGument. It's arranged in the same way as FAC, only eight bytes further up:
+ Address 105/$69 holds the exponent byte
+ Addresses 106–109/$6A–$6D hold the four-byte mantissa
+ Address 110/$6E holds the sign in it's most significant bit; 0 for positive, $FF (-1) for negative.
+A float in FAC uses 7 bytes, in ARG needs 6 bytes.
+
+Just like the CPU's accumulator plays a central role in much of what the machine does, the FAC and ARG are the "hubs" of 
+floating point calculations: Numbers to be processed are stored in FAC and ARG, and after calling the relevant routine with a 
+JSR the result is "delivered" in FAC.
+
+FAC <- FAC op ARG
+
+
+*/
+
+
+
 FAC1	= $61			; FAC1 exponent
 ;	  $62			; FAC1 mantissa 1
 ;	  $63			; FAC1 mantissa 2
@@ -859,10 +892,13 @@ IRQTMP	= $029F			; saved IRQ low byte
 
 IERROR	= $0300			; BASIC vector - print error message
 IMAIN	= $0302			; BASIC vector - main command processor
+						; GG default to $C483 i.e MAIN2
 ICRNCH	= $0304			; BASIC vector - tokenise keywords
+						; GG default to $C57C i.e. CRNCH2
 IQPLOP	= $0306			; BASIC vector - list program
 IGONE	= $0308			; BASIC vector - execute next command
 IEVAL	= $030A			; BASIC vector - get value from line
+						; Original is $CE86 FEVAL
 
 ; Before every SYS command each of the registers is loaded with the value found in the
 ; corresponding storage address. Upon returning to BASIC with an RTS instruction, the new
@@ -4240,7 +4276,7 @@ FEVAL
 LAB_CE8A
 	JSR	CHRGET			; increment and scan memory
 	BCS	LAB_CE92		; if not numeric character continue
-
+; GG ENTRY POINT FOR SUPPORT LITERAL HEX INPUT 
 ; else numeric string found (e.g. 123)
 
 LAB_CE8F
@@ -4252,7 +4288,9 @@ LAB_CE92
 	JSR	CHRTST			; check byte, return Cb = 0 if <"A" or >"Z"
 	BCC	LAB_CE9A		; if not variable name continue
 
-	JMP	FACT12			; variable name set-up and return
+	JMP	FACT12			; variable name set-up and return 
+						; jmp isvar 
+
 
 ; get value from line .. continued, wasn't a variable name so ...
 
