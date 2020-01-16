@@ -18,7 +18,8 @@ original_vic_rom.inc: original_vic_rom.sym
 
 test: original_vic_rom.bin
 	# diff $< original.bin
-	xvic.exe  -config test-new-kernel-config  test.d64
+	#xvic.exe  -config vice-dev-config  -keybuf 'lO "maze",8\nrun\n'
+	xvic.exe  -config test-new-kernel-config  -keybuf 'lO "test1",8\nrun\n'
 
 clean:
 	rm -f original_vic_rom.bin original_vic_rom.sym original_vic_rom.inc basic-vic20.bin kernal-vic20.bin *.prg
