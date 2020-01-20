@@ -1,4 +1,6 @@
 
+EMULATOR=xvic.exe
+
 all: original_vic_rom.bin  myFirstCart.prg mySecondCart.prg disk8/demo1.prg
 
 original_vic_rom.bin: original_vic_rom.asm
@@ -19,7 +21,7 @@ original_vic_rom.inc: original_vic_rom.sym
 test: original_vic_rom.bin
 	# diff $< original.bin
 	#xvic.exe  -config vice-dev-config  -keybuf 'lO "maze",8\nrun\n'
-	xvic.exe  -config test-new-kernel-config  -keybuf 'lO "test1",8\nrun\n'
+	$(EMULATOR)  -config test-new-kernel-config  -keybuf 'lO "test1",8\nrun\n'
 
 clean:
 	rm -f original_vic_rom.bin original_vic_rom.sym original_vic_rom.inc basic-vic20.bin kernal-vic20.bin *.prg
@@ -30,7 +32,10 @@ clean:
 	
 # Look at https://techtinkering.com/articles/tokenize-detokenize-commodore-basic-programs-using-petcat/
 disk8/%.prg: basic/%.bas
+	# Renumber the code
+	./tools/renumber.py $<
+	# check it
 	petcat -w2 -o $@ -- $<
 
 basic_test: disk8/demo1.prg
-	xvic.exe  -config test-old-kernel-config  -basicload disk8/demo1.prg
+	$(EMULATOR)  -config test-old-kernel-config  -basicload disk8/demo1.prg
