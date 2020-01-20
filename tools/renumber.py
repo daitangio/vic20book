@@ -35,6 +35,17 @@ import click
 LINE_FINDER=re.compile("([0-9]+)", re.IGNORECASE)
 
 
+def happy_test(example):
+    r"""
+    Unit testint example:
+
+    >>> happy_test("is")
+    'is_ok'
+    """
+    return example+"_ok"
+
+
+
 def collect_numbers(fname, start_from=10, increment=10):
     old2new={}    
     new_line_number=start_from
@@ -90,9 +101,10 @@ def fix_goto_gosub(fname,old2new):
 
 @click.option("--start",  default=10, help="Start renumber from")
 @click.option("--increment",  default=10, help="Increment factor")
-@click.argument("basic_files", nargs=-1, required=True)
+@click.option("--test/--no-test", default=False, help="unit test")
+@click.argument("basic_files", nargs=-1, required=False)
 @click.command()
-def main(basic_files: list, start,increment):
+def main(basic_files: list, start,increment,test):
     """ Renumber BASIC v2 Programs
         Support GOTO/GOSUB renumbering via a simple two-pass algorithm
 
@@ -101,6 +113,14 @@ def main(basic_files: list, start,increment):
 
         Author: Giovanni Giorgi 
     """
+    if test:
+        print("Self test...")
+        import doctest
+        (fails, something) = doctest.testmod(sys.modules[__name__], verbose=True)
+        if fails == 0:
+            sys.exit(0)
+        else:
+            sys.exit(1)
     for fname in basic_files:
         print("Renumbering",fname)
         old2new=collect_numbers(fname,start,increment)        
