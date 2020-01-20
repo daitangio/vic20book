@@ -1,5 +1,5 @@
 
-all: original_vic_rom.bin  myFirstCart.prg mySecondCart.prg
+all: original_vic_rom.bin  myFirstCart.prg mySecondCart.prg disk8/demo1.prg
 
 original_vic_rom.bin: original_vic_rom.asm
 	xa -M -o $@ -l $(basename $@).sym $<
@@ -28,5 +28,9 @@ clean:
 %.prg: code/%.asm original_vic_rom.inc
 	xa -M -o $@ -l $(basename $@).sym $<
 	
+# Look at https://techtinkering.com/articles/tokenize-detokenize-commodore-basic-programs-using-petcat/
+disk8/%.prg: basic/%.bas
+	petcat -w2 -o $@ -- $<
 
-
+basic_test: disk8/demo1.prg
+	xvic.exe  -config test-old-kernel-config  -basicload disk8/demo1.prg

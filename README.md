@@ -3,7 +3,7 @@ See
 http://sleepingelephant.com/ipw-web/bulletin/bb/viewtopic.php?t=7662
 
 # How to dev
- sudo apt install xa65
+ sudo apt install xa65 vice
 
 
 # References
