@@ -92,7 +92,8 @@ def fix_goto_gosub(fname,old2new):
                     old_line=int(m.group(2))
                     new_goto_number=old2new[old_line]
                     # Compose the new GO TO GOSUB etc
-                    new_goto="GO"+m.group(1)+" "+str(new_goto_number)+m.group(3)
+                    # GG Bug: does not keep case
+                    new_goto="go"+m.group(1)+" "+str(new_goto_number)+m.group(3)
                     # Single replace
                     dest_line=dest_line.replace(m.group(0), new_goto,1)
                     #print ("s/"+m.group(0)+"/"+new_goto+"/",dest_line)

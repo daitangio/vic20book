@@ -10,7 +10,7 @@ http://sleepingelephant.com/ipw-web/bulletin/bb/viewtopic.php?t=7662
 https://manpages.debian.org/experimental/xa65/xa.1.en.html
 
 # Nice Resources
-
++ Hacking articles https://techtinkering.com/articles/changing-screen-dimensions-on-the-commodore-vic-20/
 + Chargen generator https://github.com/mobluse/chargen-maker
 
 + Multi Emulator Super system (mess) supports Vic20 too https://en.wikipedia.org/wiki/Multi_Emulator_Super_System
@@ -24,3 +24,4 @@ https://manpages.debian.org/experimental/xa65/xa.1.en.html
 
 + BASIC Rougue-like game using interestring tools: https://github.com/catseye/Dungeons-of-Ekileugor
 + Games written in assembly: https://github.com/theflyingape/berzerk-mmx/blob/master/COMPILE.BAT
+

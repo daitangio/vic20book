@@ -33,7 +33,7 @@ clean:
 # Look at https://techtinkering.com/articles/tokenize-detokenize-commodore-basic-programs-using-petcat/
 disk8/%.prg: basic/%.bas
 	# Renumber the code
-	./tools/renumber.py $<
+	./tools/renumber.py --start 100 $<
 	# check it
 	petcat -w2 -o $@ -- $<
 
