@@ -1,0 +1,30 @@
+# Author Giovanni Giorgi
+# Take a look at https://cc65.github.io/doc/da65.html#ss4.7
+# for directive explanation
+
+# This file is able to decode the super expander cartridge
+# giving a meaning at least of the boot procedure
+
+GLOBAL {
+    OUTPUTNAME      "superexpander-source.s";
+    INPUTNAME       "Super%20Expander.prg";
+    STARTADDR       $9FFE;              # file has two byte at the head, so we backflip of two bytes
+    PAGELENGTH      0;                  # No paging
+    CPU             "6502";
+};
+
+# Stack
+LABEL { NAME "Stack";                ADDR  $100 ;  SIZE 255;  };
+LABEL { NAME "Start_A000";           ADDR $A000 ;  SIZE 1;  };
+LABEL { NAME "Main_EntryPoint_A044"; ADDR $A044 ;  SIZE 1;  };
+
+RANGE { START $A044;    END   $AFFF; TYPE Code;      };
+
+# A0CBM
+RANGE { START $A000 ;    END $A001;   TYPE ADDRTABLE; };
+RANGE { START $A004 ;    END $A008;   TYPE BYTETABLE; };
+RANGE { START $A009 ;    END $A043;   TYPE TEXTTABLE; };
+
+ASMINC { 
+    FILE "./jj_vic_rom.inc" ;
+};
