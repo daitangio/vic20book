@@ -8,7 +8,8 @@
 GLOBAL {
     OUTPUTNAME      "superexpander-source.s";
     INPUTNAME       "Super%20Expander.prg";
-    STARTADDR       $9FFE;              # file has two byte at the head, so we backflip of two bytes
+    INPUTOFFS       2; # file has two byte at the head for the relocation address, so we skip first two bytes
+    STARTADDR       $A000;              
     PAGELENGTH      0;                  # No paging
     CPU             "6502";
 };
@@ -18,11 +19,18 @@ LABEL { NAME "Stack";                ADDR  $100 ;  SIZE 255;  };
 LABEL { NAME "Start_A000";           ADDR $A000 ;  SIZE 1;  };
 LABEL { NAME "Main_EntryPoint_A044"; ADDR $A044 ;  SIZE 1;  };
 
-RANGE { START $A044;    END   $AFFF; TYPE Code;      };
+RANGE { START $A044;    END   $A58A; TYPE Code;      };
+# Vector table 
+RANGE { START $A58B;    END   $A596; TYPE ADDRTABLE; };
+RANGE { START $A597;    END   $AFFF; TYPE Code;      };
 
-# A0CBM
+LABEL { ADDR $A597; NAME "LA597" ; COMMENT "Load the Basic vector table with SuperExpander extensions:" ; };
+
+
 RANGE { START $A000 ;    END $A001;   TYPE ADDRTABLE; };
+# A0CBM called XROMID
 RANGE { START $A004 ;    END $A008;   TYPE BYTETABLE; };
+
 RANGE { START $A009 ;    END $A043;   TYPE TEXTTABLE; };
 
 ASMINC { 

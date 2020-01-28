@@ -1,5 +1,5 @@
 ; da65 V2.16 - Ubuntu 2.16-2
-; Created:    2020-01-28 21:39:16
+; Created:    2020-01-28 23:00:25
 ; Input file: Super%20Expander.prg
 ; Page:       1
 
@@ -9,10 +9,24 @@
 L0054           := $0054
 CHRGET          := $0073
 CHRGOT          := $0079
-DATA_FB         := $00FB
-DATA_FC         := $00FC
+CHRSPC          := $0080
+PRTY            := $009B
+PTR1            := $009E
+PTR2            := $009F
+TK_MUL          := $00AC
+TK_DIV          := $00AD
+SX_PTR__LOW     := $00FB
+SX_PTR_HIGH     := $00FC
 Stack           := $0100
-L02C0           := $02C0
+MEMSTR          := $0281
+MEMHIGH         := $0283
+MEMORY__TODEFINE_02C0:= $02C0
+PRINT_ERROR_MESSAGE_VECTOR:= $0300
+MAIN_COMMAND_PROCESS_VECTOR:= $0302
+TOKENISE_VECTOR := $0304
+LIST_PROGRAM_VECTOR:= $0306
+EXECUTE_NEXT_COMMAND_VECTOR:= $0308
+GET_VALUE_FROM_LINE_VECTOR:= $030A
 L0316           := $0316
 L0810           := $0810
 L24A8           := $24A8
@@ -70,6 +84,7 @@ WARMST          := $C002
 STMDSP          := $C00C
 FUNDSP          := $C052
 OPTAB           := $C080
+BASIC_KEYWORDS_MINUS_ONE:= $C09D
 RESLST          := $C09E
 ERRSTR01        := $C19E
 ERRSTR02        := $C1AC
@@ -334,7 +349,7 @@ FPC20           := $E2DD
 ATN             := $E30B
 ATNCON          := $E33B
 COLDBA          := $E378
-LE37B           := $E37B
+JUMP_INSIDE_COLDBA_INIT_BA_E37B:= $E37B
 CGIMAG          := $E387
 INITBA          := $E3A4
 FREMSG          := $E404
@@ -586,8 +601,6 @@ UDTIM           := $FFEA
 SCREEN          := $FFED
 PLOT            := $FFF0
 IOBASE          := $FFF3
-        brk
-        .byte   $A0
 Start_A000:
         .addr   Main_EntryPoint_A044
 XROMWARM:
@@ -626,12 +639,12 @@ Main_EntryPoint_A044:
         tay
         clc
         jsr     MEMTOP
-        stx     DATA_FB
-        sty     DATA_FC
+        stx     SX_PTR__LOW
+        sty     SX_PTR_HIGH
         ldy     #$FF
 LA063:  iny
         lda     LA011,y
-        sta     (DATA_FB),y
+        sta     (SX_PTR__LOW),y
         bne     LA063
         jsr     LA238
         lda     #$00
@@ -665,11 +678,11 @@ LA088:  jmp     _RTI
         pha
         jsr     LA14A
         pla
-        sta     $9E
+        sta     PTR1
         lda     $02A1
         sec
         sbc     $9D
-        cmp     $9E
+        cmp     PTR1
         bcc     LA0B9
         jmp     LA17B
 
@@ -687,9 +700,9 @@ LA0C3:  lda     LA132,y
         clc
         adc     #$30
         jsr     CHROUT
-        stx     $9E
+        stx     PTR1
         jsr     LA1B1
-        lda     (DATA_FB),y
+        lda     (SX_PTR__LOW),y
         sta     $02A2
         iny
         lda     #$2C
@@ -698,7 +711,7 @@ LA0E0:  jsr     CHROUT
         jsr     CHROUT
         ldx     $02A2
         beq     LA100
-LA0ED:  lda     (DATA_FB),y
+LA0ED:  lda     (SX_PTR__LOW),y
         cmp     #$0D
         beq     LA11D
         cmp     #$22
@@ -710,7 +723,7 @@ LA0ED:  lda     (DATA_FB),y
 LA100:  lda     #$22
         jsr     CHROUT
 LA105:  jsr     LCAD7
-        ldx     $9E
+        ldx     PTR1
         inx
         cpx     #$09
         bcc     LA0C1
@@ -750,62 +763,62 @@ LA140:  and     #$34
         .byte   $2B
         .byte   $22
 LA14A:  jsr     LA1B1
-        lda     (DATA_FB),y
-        sta     $9E
+        lda     (SX_PTR__LOW),y
+        sta     PTR1
         iny
-        sty     $9B
+        sty     PRTY
         ldx     #$09
         jsr     LA1B1
         sty     $9D
-        ldx     $9E
+        ldx     PTR1
         beq     LA172
-LA15F:  ldy     $9B
+LA15F:  ldy     PRTY
 LA161:  iny
-        lda     (DATA_FB),y
+        lda     (SX_PTR__LOW),y
         dey
-        sta     (DATA_FB),y
+        sta     (SX_PTR__LOW),y
         iny
         cpy     $9D
         bne     LA161
         dec     $9D
-        dec     $9E
+        dec     PTR1
         bne     LA15F
-LA172:  dec     $9B
+LA172:  dec     PRTY
         lda     #$00
-        ldy     $9B
-        sta     (DATA_FB),y
+        ldy     PRTY
+        sta     (SX_PTR__LOW),y
         rts
 
 LA17B:
 LA17C           := * + 1
-        lda     $9E
-LA17D:  sta     $9F
+        lda     PTR1
+LA17D:  sta     PTR2
         beq     LA1B0
 LA181:  ldy     $9D
 LA183:  dey
-        lda     (DATA_FB),y
+        lda     (SX_PTR__LOW),y
         iny
-        sta     (DATA_FB),y
+        sta     (SX_PTR__LOW),y
         dey
-        cpy     $9B
+        cpy     PRTY
         bne     LA183
         inc     $9D
-        dec     $9F
+        dec     PTR2
         bne     LA181
-        ldy     $9B
-        lda     $9E
-        sta     (DATA_FB),y
+        ldy     PRTY
+        lda     PTR1
+        sta     (SX_PTR__LOW),y
         tya
         sec
-        adc     DATA_FB
-        sta     $AC
+        adc     SX_PTR__LOW
+        sta     TK_MUL
         lda     #$00
-        adc     DATA_FC
-        sta     $AD
-        ldy     $9E
+        adc     SX_PTR_HIGH
+        sta     TK_DIV
+        ldy     PTR1
         dey
 LA1A9:  lda     ($22),y
-        sta     ($AC),y
+        sta     (TK_MUL),y
         dey
         bpl     LA1A9
 LA1B0:  rts
@@ -815,7 +828,7 @@ LA1B1:  ldy     #$00
         clc
 LA1B5:  dex
         beq     LA1B0
-        adc     (DATA_FB),y
+        adc     (SX_PTR__LOW),y
         adc     #$01
         tay
 LA1BE           := * + 1
@@ -938,7 +951,7 @@ LA24A:  sta     ($C3),y
         sta     $02D1
         sta     $02D0
         lda     #$4C
-        sta     L02C0
+        sta     MEMORY__TODEFINE_02C0
         lda     #$4F
         sta     $02C1
         lda     #$A8
@@ -1049,7 +1062,7 @@ LA346:  cmp     $C5
         tay
         ldx     LA009,y
         jsr     LA1B1
-        lda     (DATA_FB),y
+        lda     (SX_PTR__LOW),y
         sta     $02A4
         iny
         sty     $02A3
@@ -1073,7 +1086,7 @@ LA372:  ldx     $02A4
         ldx     $C6
         cpx     #$0A
         beq     LA38F
-        lda     (DATA_FB),y
+        lda     (SX_PTR__LOW),y
         sta     $0277,x
         inc     $C6
         inc     $02A3
@@ -1144,7 +1157,7 @@ LA3FD:  txa
         tax
         jmp     ERROR2
 
-        ldx     $7A
+LA407:  ldx     $7A
         ldy     #$04
         sty     $0F
 LA40D:  lda     $0200,x
@@ -1210,7 +1223,7 @@ LA479:  iny
 LA480:  ldx     $7A
         inc     $0B
 LA484:  iny
-        lda     $C09D,y
+        lda     BASIC_KEYWORDS_MINUS_ONE,y
         bpl     LA484
         lda     RESLST,y
         bne     LA443
@@ -1236,7 +1249,7 @@ LA4A7:  iny
         bpl     LA452
 LA4B7:  jmp     LC609
 
-        bpl     LA4FE
+LA4BA:  bpl     LA4FE
         cmp     #$FF
         beq     LA4FE
         bit     $0F
@@ -1276,7 +1289,7 @@ LA4FE:  jmp     LC6F3
 
 LA501:  jmp     LC6EF
 
-        jsr     CHRGET
+LA504:  jsr     CHRGET
         cmp     #$CC
         bcc     LA524
         cmp     #$D7
@@ -1296,6 +1309,7 @@ LA515:  sbc     #$CB
 LA524:  jsr     CHRGOT
         jmp     LC7E7
 
+SE_GET_VALUE_FROM_LINE:
         lda     #$00
         sta     $0D
         jsr     CHRGET
@@ -1342,19 +1356,20 @@ LA570:  jsr     RPACHK
         jsr     LD3A2
         jmp     LCD8D
 
-LA58B:  sbc     $83A3,x
-        cpy     $07
-        ldy     $BA
-        ldy     $04
-        lda     $2A
-LA597           := * + 1
-        lda     $A2
-        .byte   $0B
-LA599:  lda     LA58B,x
-        sta     $0300,x
+BASIC_VECTOR_PATCH:
+        .addr   LA3FD
+        .addr   MAIN2
+        .addr   LA407
+        .addr   LA4BA
+        .addr   LA504
+        .addr   SE_GET_VALUE_FROM_LINE
+; Load the Basic vector table with SuperExpander extensions
+LA597:  ldx     #$0B
+LA599:  lda     BASIC_VECTOR_PATCH,x
+        sta     PRINT_ERROR_MESSAGE_VECTOR,x
         dex
         bpl     LA599
-        jmp     LE37B
+        jmp     JUMP_INSIDE_COLDBA_INIT_BA_E37B
 
 LA5A5:  stx     $C3
         sty     $C4
@@ -1633,7 +1648,7 @@ LA7AE:  jsr     LA6FD
         lda     #$03
 LA7C8:  ldx     #$3C
         ldy     #$03
-        jmp     L02C0
+        jmp     MEMORY__TODEFINE_02C0
 
         jsr     LD79E
         stx     $033C
@@ -1789,10 +1804,10 @@ LA8D4:  lda     $2C
 LA8FA:  jmp     LA0B9
 
 LA8FD:  ldy     #$00
-        sty     $9B
+        sty     PRTY
         sty     $2D
 LA903:  lda     ($2D),y
-        sta     ($9B),y
+        sta     (PRTY),y
         iny
         cpy     $24
         bcc     LA903
@@ -1804,7 +1819,7 @@ LA90E:  dec     $2E
         bcc     LA923
         ldy     #$00
 LA91A:  lda     ($2D),y
-        sta     ($9B),y
+        sta     (PRTY),y
         iny
         bne     LA91A
         beq     LA90E
@@ -1851,10 +1866,10 @@ LA967:  sty     $25
         adc     $25
         sta     $7B
         ldy     #$00
-        sty     $9B
+        sty     PRTY
         sty     $2B
 LA97F:  lda     ($2B),y
-        sta     ($9B),y
+        sta     (PRTY),y
         iny
         bne     LA97F
         lda     $2C
@@ -1914,10 +1929,10 @@ LA9ED:  lda     $02C3,x
         sta     $9C
         lda     #$00
         tay
-        sta     $9B
+        sta     PRTY
 LAA08:  pha
         ldx     #$14
-LAA0B:  sta     ($9B),y
+LAA0B:  sta     (PRTY),y
         clc
         adc     #$0A
         iny
@@ -1996,7 +2011,7 @@ LAA84:  rts
         lsr     a
         lsr     a
         tay
-        lda     ($9E),y
+        lda     (PTR1),y
         sta     $26
         and     #$08
         bne     LAAC3
@@ -2005,7 +2020,7 @@ LAA84:  rts
         tax
         lda     LAFE7,x
         ldy     $66
-        and     ($9B),y
+        and     (PRTY),y
         bne     LAABD
         lda     $02CB
         jmp     LAAE0
@@ -2018,7 +2033,7 @@ LAAC3:  lda     $63
         tax
         lda     LAFEF,x
         ldy     $66
-        and     ($9B),y
+        and     (PRTY),y
 LAACF:  cpx     #$06
         beq     LAAD8
         lsr     a
@@ -2049,9 +2064,9 @@ LAAFC:  lda     $02D0
         sta     $9C
         lda     #$00
         tay
-        sta     $9B
+        sta     PRTY
         ldx     #$0C
-LAB08:  sta     ($9B),y
+LAB08:  sta     (PRTY),y
         iny
         bne     LAB08
         inc     $9C
@@ -2143,9 +2158,9 @@ LABAD:  lda     LAFF7,y
         lda     LAFEF,x
 LABB8:  eor     #$FF
         ldy     $66
-        and     ($9B),y
+        and     (PRTY),y
         ora     $26
-        sta     ($9B),y
+        sta     (PRTY),y
         lda     $63
         lsr     a
         lsr     a
@@ -2157,11 +2172,11 @@ LABB8:  eor     #$FF
         ldx     $02CA
         cpx     #$02
         beq     LABDC
-        lda     ($9E),y
+        lda     (PTR1),y
         ora     #$08
         bne     LABDF
 LABDC:  lda     $02CD
-LABDF:  sta     ($9E),y
+LABDF:  sta     (PTR1),y
         ldy     $02CF
 LABE4:  rts
 
@@ -2171,7 +2186,7 @@ LABE5:  lda     $63
         lsr     a
         tax
         lda     LAFBB,x
-        sta     $9B
+        sta     PRTY
         lda     LAFCF,x
         sta     $9C
         lda     $66
@@ -2181,11 +2196,11 @@ LABE5:  lda     $63
 LABFA:  lsr     a
         tax
         lda     LAFB1,x
-        sta     $9E
+        sta     PTR1
         lda     $0288
         and     #$03
         ora     #$94
-        sta     $9F
+        sta     PTR2
         rts
 
 LAC0B:  jsr     LAF48
@@ -2450,11 +2465,11 @@ LAE24:  jsr     LABE5
         bit     $24
         bmi     LAE36
         lda     LAFE7,x
-        and     ($9B),y
+        and     (PRTY),y
         rts
 
 LAE36:  lda     LAFEF,x
-        and     ($9B),y
+        and     (PRTY),y
         rts
 
 LAE3C:  inc     $63
@@ -2491,7 +2506,7 @@ LAE66:  dec     $6B
         cpy     #$14
         bcs     LAED7
         lda     $02CD
-        sta     ($9E),y
+        sta     (PTR1),y
         tya
         tax
         lda     $69
@@ -2499,34 +2514,34 @@ LAE66:  dec     $6B
         asl     a
         asl     a
         adc     LAFBB,x
-        sta     $9B
+        sta     PRTY
         lda     #$00
         adc     LAFCF,x
         sta     $9C
         lda     $6C
-        sta     $9E
+        sta     PTR1
         lda     $6D
-        sta     $9F
+        sta     PTR2
         ldy     #$00
-        lda     ($9E),y
+        lda     (PTR1),y
         bpl     LAEA5
         and     #$3F
         ora     #$40
         bne     LAEA7
 LAEA5:  and     #$3F
 LAEA7:  ldy     #$10
-        sty     $9F
+        sty     PTR2
         rol     a
 LAEAD           := * + 1
-        rol     $9F
+        rol     PTR2
         rol     a
-        rol     $9F
+        rol     PTR2
         rol     a
-        rol     $9F
-        sta     $9E
+        rol     PTR2
+        sta     PTR1
         ldy     #$07
-LAEB8:  lda     ($9E),y
-        sta     ($9B),y
+LAEB8:  lda     (PTR1),y
+        sta     (PRTY),y
         dey
         bpl     LAEB8
         inc     $6C
