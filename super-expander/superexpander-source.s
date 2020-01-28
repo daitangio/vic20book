@@ -1,5 +1,5 @@
 ; da65 V2.16 - Ubuntu 2.16-2
-; Created:    2020-01-28 23:00:25
+; Created:    2020-01-28 23:24:38
 ; Input file: Super%20Expander.prg
 ; Page:       1
 
@@ -29,10 +29,7 @@ EXECUTE_NEXT_COMMAND_VECTOR:= $0308
 GET_VALUE_FROM_LINE_VECTOR:= $030A
 L0316           := $0316
 L0810           := $0810
-L24A8           := $24A8
-L44C5           := $44C5
 L4559           := $4559
-L52D2           := $52D2
 L60C0           := $60C0
 L8040           := $8040
 VICCR0          := $9000
@@ -228,7 +225,6 @@ ARY             := $D1D1
 BADSUB          := $D245
 ILQUAN          := $D248
 ARY2            := $D24D
-LD24F           := $D24F
 ARY6            := $D261
 ARY14           := $D2EA
 M16             := $D34C
@@ -833,87 +829,58 @@ LA1B5:  dex
         tay
 LA1BE           := * + 1
         bne     LA1B5
-LA1BF:  .byte   $4B
-        eor     $D9
-        .byte   $47
-        .byte   $52
-        eor     ($50,x)
-        pha
-        eor     #$C3
-        .byte   $53
-        .byte   $43
-        lsr     $4C43
+LA1BF:  .byte   "KE"
+        .byte   $D9
+        .byte   "GRAPHI"
+        .byte   $C3
+        .byte   "SCNCL"
         .byte   $D2
-        .byte   $43
-        eor     #$52
-        .byte   $43
-        jmp     L44C5
-
-        .byte   $52
-        eor     ($D7,x)
-        .byte   $52
-        eor     $47
-        eor     #$4F
-        dec     $4F43
-        jmp     LD24F
-
-        bvc     LA235
-        eor     #$4E
-        .byte   $D4
-        .byte   $53
-        .byte   $4F
-        eor     $4E,x
-        cpy     $43
-        pha
-        eor     ($D2,x)
-        bvc     LA235
-        eor     #$4E
-        .byte   $D4
-        .byte   $52
-        bvc     LA249
-        .byte   $D4
-        .byte   $52
-        bvc     LA243
-        dec     $5352
-        lsr     $52C4
-        .byte   $43
-        .byte   $4F
-        jmp     L52D2
-
-        .byte   $47
+        .byte   "CIRCL"
+        .byte   $C5
+        .byte   "DRA"
+        .byte   $D7
+        .byte   "REGIO"
+        .byte   $CE
+        .byte   "COLO"
         .byte   $D2
-        .byte   $52
-        lsr     a
-        .byte   $4F
-        cmp     $4452,y
-        .byte   $4F
+        .byte   "POIN"
         .byte   $D4
-        brk
-LA214:  txa
-LA215:  ldy     #$2B
+        .byte   "SOUN"
+        .byte   $C4
+        .byte   "CHA"
+        .byte   $D2
+        .byte   "PAIN"
+        .byte   $D4
+        .byte   "RPO"
+        .byte   $D4
+        .byte   "RPE"
+        .byte   $CE
+        .byte   "RSN"
+        .byte   $C4
+        .byte   "RCOL"
+        .byte   $D2
+        .byte   "RG"
+        .byte   $D2
+        .byte   "RJO"
+        .byte   $D9
+        .byte   "RDO"
+        .byte   $D4,$00
+LA214:  .byte   $8A
+LA215:  .byte   $A0
+        .byte   "+"
+        .byte   $A7,$D8,$A7
+        .byte   "?"
         .byte   $A7
-        cld
-        .byte   $A7
-        .byte   $3F
-        .byte   $A7
-        .byte   $62
-        .byte   $A7
-        dec     $BCA7
-        .byte   $A7
-        ldy     $A7
-        .byte   $DC
-        .byte   $A7
-        sbc     #$A7
-        ora     #$A8
-        ora     ($A8),y
-        clc
+        .byte   "b"
+        .byte   $A7,$CE,$A7,$BC,$A7,$A4,$A7,$DC
+        .byte   $A7,$E9,$A7,$09,$A8,$11,$A8,$18
+        .byte   $A8,$1C,$A8
+        .byte   " "
+        .byte   $A8
+        .byte   "$"
+        .byte   $A8
+        .byte   "C"
         tay
-        .byte   $1C
-        tay
-        jsr     L24A8
-        tay
-        .byte   $43
-LA235:  tay
         plp
         tay
 LA238:  ldx     #$A2
@@ -924,7 +891,6 @@ LA238:  ldx     #$A2
         ldy     #$1F
 LA243:  lda     $0314,y
         bcs     LA24A
-LA249           := * + 1
         lda     ($C3),y
 LA24A:  sta     ($C3),y
         sta     $0314,y
@@ -1363,7 +1329,7 @@ BASIC_VECTOR_PATCH:
         .addr   LA4BA
         .addr   LA504
         .addr   SE_GET_VALUE_FROM_LINE
-; Load the Basic vector table with SuperExpander extensions
+; Load the Basic vector table with SuperExpander extensions:
 LA597:  ldx     #$0B
 LA599:  lda     BASIC_VECTOR_PATCH,x
         sta     PRINT_ERROR_MESSAGE_VECTOR,x
