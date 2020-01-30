@@ -1,5 +1,5 @@
 ; da65 V2.16 - Ubuntu 2.16-2
-; Created:    2020-01-30 20:50:44
+; Created:    2020-01-30 21:52:23
 ; Input file: SuperExpander.prg
 ; Page:       1
 
@@ -7,9 +7,20 @@
         .setcpu "6502"
 
 ; ----------------------------------------------------------------------------
+ENDCHR_SCAN_QUOTE:= $0008
+TMP_BYTE_COUNT  := $000B
+REG_DATA_LINE_FLAG_QUOTE_GC:= $000F
+TMP_BYTE_22     := $0022
+TMP_BYTE_23     := $0023
+TMP_BYTE_24     := $0024
+TMP_BYTE_25     := $0025
 L0054           := $0054
+TMP_BASIC_FBUFPT_PTR:= $0071
+TMP_BASIC_FBUFPT_HIGH:= $0072
 CHRGET          := $0073
 CHRGOT          := $0079
+BASIC_PTR_LOW   := $007A
+BASIC_PTR_HIGH  := $007B
 CHRSPC          := $0080
 PRTY            := $009B
 PTR1            := $009E
@@ -18,7 +29,7 @@ TK_MUL          := $00AC
 TK_DIV          := $00AD
 SX_PTR__LOW     := $00FB
 SX_PTR_HIGH     := $00FC
-Stack           := $0100
+INPUT_BUFFER_0200:= $0200
 MEMSTR          := $0281
 MEMHIGH         := $0283
 MEMORY__TODEFINE_02C0:= $02C0
@@ -79,7 +90,7 @@ STMDSP          := $C00C
 FUNDSP          := $C052
 OPTAB           := $C080
 BASIC_KEYWORDS_MINUS_ONE:= $C09D
-RESLST          := $C09E
+RESLST_BASIC_KEYWORDS_AREA:= $C09E
 ERRSTR01        := $C19E
 ERRSTR02        := $C1AC
 ERRSTR03        := $C1B5
@@ -128,13 +139,13 @@ ERROR2          := $C43A
 PRDY            := $C469
 READY           := $C474
 MAIN            := $C480
-MAIN2           := $C483
+MAIN2_DEFAULT_MAIN_CMMAND_PROCESSOR:= $C483
 NEWLIN          := $C49C
 LNKPRG          := $C533
 GETLIN          := $C560
 CRNCH           := $C579
 CRNCH2          := $C57C
-LC609           := $C609
+BASIC_TOKENIZER_EOL_RTS:= $C609
 FINLIN          := $C613
 NEW             := $C642
 CLR             := $C65E
@@ -822,7 +833,7 @@ LA183:  dey                                     ; A183
         sta     TK_DIV                          ; A1A4
         ldy     PTR1                            ; A1A6
         dey                                     ; A1A8
-LA1A9:  lda     ($22),y                         ; A1A9
+LA1A9:  lda     (TMP_BYTE_22),y                 ; A1A9
         sta     (TK_MUL),y                      ; A1AB
         dey                                     ; A1AD
         bpl     LA1A9                           ; A1AE
@@ -837,9 +848,10 @@ LA1B5:  dex                                     ; A1B5
         adc     (SX_PTR__LOW),y                 ; A1B8
         adc     #$01                            ; A1BA
         tay                                     ; A1BC
-KEYWORD_DATA_OFFSET:= * + 1                     ; DATA Offset unkown usage
+SE_KEYWORD_DATA_OFFSET:= * + 1
         bne     LA1B5                           ; A1BD
-LA1BF:  .byte   "KE"                            ; A1BF
+SE_KEYWORD_DATA_OFFSET_PLUS_1:
+        .byte   "KE"                            ; A1BF
         .byte   $D9                             ; A1C1
         .byte   "GRAPHI"                        ; A1C2
         .byte   $C3                             ; A1C8
@@ -1120,7 +1132,8 @@ LA3F2:  tya                                     ; A3F2
         jmp     LE657                           ; A3FA
 
 ; ----------------------------------------------------------------------------
-LA3FD:  txa                                     ; A3FD
+SE_PRINT_ERROR:
+        txa                                     ; A3FD
         pha                                     ; A3FE
         jsr     LA736                           ; A3FF
         pla                                     ; A402
@@ -1128,10 +1141,11 @@ LA3FD:  txa                                     ; A3FD
         jmp     ERROR2                          ; A404
 
 ; ----------------------------------------------------------------------------
-LA407:  ldx     $7A                             ; A407
+SE_TOKENIZER:
+        ldx     BASIC_PTR_LOW                   ; A407
         ldy     #$04                            ; A409
-        sty     $0F                             ; A40B
-LA40D:  lda     $0200,x                         ; A40D
+        sty     REG_DATA_LINE_FLAG_QUOTE_GC     ; A40B
+LA40D:  lda     INPUT_BUFFER_0200,x             ; A40D
         bpl     LA419                           ; A410
         cmp     #$FF                            ; A412
         beq     LA454                           ; A414
@@ -1139,10 +1153,10 @@ LA40D:  lda     $0200,x                         ; A40D
         bne     LA40D                           ; A417
 LA419:  cmp     #$20                            ; A419
         beq     LA454                           ; A41B
-        sta     $08                             ; A41D
+        sta     ENDCHR_SCAN_QUOTE               ; A41D
         cmp     #$22                            ; A41F
         beq     LA479                           ; A421
-        bit     $0F                             ; A423
+        bit     REG_DATA_LINE_FLAG_QUOTE_GC     ; A423
         bvs     LA454                           ; A425
         cmp     #$3F                            ; A427
         bne     LA42F                           ; A429
@@ -1152,108 +1166,109 @@ LA42F:  cmp     #$30                            ; A42F
         bcc     LA437                           ; A431
         cmp     #$3C                            ; A433
         bcc     LA454                           ; A435
-LA437:  sty     $71                             ; A437
+LA437:  sty     TMP_BASIC_FBUFPT_PTR            ; A437
         ldy     #$00                            ; A439
-        sty     $0B                             ; A43B
+        sty     TMP_BYTE_COUNT                  ; A43B
         dey                                     ; A43D
-        stx     $7A                             ; A43E
+        stx     BASIC_PTR_LOW                   ; A43E
         dex                                     ; A440
 LA441:  iny                                     ; A441
         inx                                     ; A442
-LA443:  lda     $0200,x                         ; A443
+LA443:  lda     INPUT_BUFFER_0200,x             ; A443
         sec                                     ; A446
-        sbc     RESLST,y                        ; A447
+        sbc     RESLST_BASIC_KEYWORDS_AREA,y    ; A447
         beq     LA441                           ; A44A
         cmp     #$80                            ; A44C
         bne     LA480                           ; A44E
-LA450:  ora     $0B                             ; A450
-LA452:  ldy     $71                             ; A452
+LA450:  ora     TMP_BYTE_COUNT                  ; A450
+LA452:  ldy     TMP_BASIC_FBUFPT_PTR            ; A452
 LA454:  inx                                     ; A454
         iny                                     ; A455
-        sta     Stack+251,y                     ; A456
-        lda     Stack+251,y                     ; A459
+        sta     $01FB,y                         ; A456
+        lda     $01FB,y                         ; A459
         beq     LA4B7                           ; A45C
         sec                                     ; A45E
         sbc     #$3A                            ; A45F
         beq     LA467                           ; A461
         cmp     #$49                            ; A463
         bne     LA469                           ; A465
-LA467:  sta     $0F                             ; A467
+LA467:  sta     REG_DATA_LINE_FLAG_QUOTE_GC     ; A467
 LA469:  sec                                     ; A469
         sbc     #$55                            ; A46A
         bne     LA40D                           ; A46C
-        sta     $08                             ; A46E
-LA470:  lda     $0200,x                         ; A470
+        sta     ENDCHR_SCAN_QUOTE               ; A46E
+LA470:  lda     INPUT_BUFFER_0200,x             ; A470
         beq     LA454                           ; A473
-        cmp     $08                             ; A475
+        cmp     ENDCHR_SCAN_QUOTE               ; A475
         beq     LA454                           ; A477
 LA479:  iny                                     ; A479
-        sta     Stack+251,y                     ; A47A
+        sta     $01FB,y                         ; A47A
         inx                                     ; A47D
         bne     LA470                           ; A47E
-LA480:  ldx     $7A                             ; A480
-        inc     $0B                             ; A482
+LA480:  ldx     BASIC_PTR_LOW                   ; A480
+        inc     TMP_BYTE_COUNT                  ; A482
 LA484:  iny                                     ; A484
         lda     BASIC_KEYWORDS_MINUS_ONE,y      ; A485
         bpl     LA484                           ; A488
-        lda     RESLST,y                        ; A48A
+        lda     RESLST_BASIC_KEYWORDS_AREA,y    ; A48A
         bne     LA443                           ; A48D
         ldy     #$FF                            ; A48F
         dex                                     ; A491
 LA492:  iny                                     ; A492
         inx                                     ; A493
-LA494:  lda     $0200,x                         ; A494
+LA494:  lda     INPUT_BUFFER_0200,x             ; A494
         sec                                     ; A497
-        sbc     LA1BF,y                         ; A498
+        sbc     SE_KEYWORD_DATA_OFFSET_PLUS_1,y ; A498
         beq     LA492                           ; A49B
         cmp     #$80                            ; A49D
 LA49F:  bne     LA4A3                           ; A49F
         beq     LA450                           ; A4A1
-LA4A3:  ldx     $7A                             ; A4A3
-        inc     $0B                             ; A4A5
+LA4A3:  ldx     BASIC_PTR_LOW                   ; A4A3
+        inc     TMP_BYTE_COUNT                  ; A4A5
 LA4A7:  iny                                     ; A4A7
-        lda     KEYWORD_DATA_OFFSET,y           ; A4A8
+        lda     SE_KEYWORD_DATA_OFFSET,y        ; A4A8
         bpl     LA4A7                           ; A4AB
-        lda     LA1BF,y                         ; A4AD
+        lda     SE_KEYWORD_DATA_OFFSET_PLUS_1,y ; A4AD
         bne     LA494                           ; A4B0
-        lda     $0200,x                         ; A4B2
+        lda     INPUT_BUFFER_0200,x             ; A4B2
         bpl     LA452                           ; A4B5
-LA4B7:  jmp     LC609                           ; A4B7
+LA4B7:  jmp     BASIC_TOKENIZER_EOL_RTS         ; A4B7
 
 ; ----------------------------------------------------------------------------
-LA4BA:  bpl     LA4FE                           ; A4BA
+SE_LIST_PROGRAM:
+        bpl     LA4FE                           ; A4BA
         cmp     #$FF                            ; A4BC
         beq     LA4FE                           ; A4BE
-        bit     $0F                             ; A4C0
+        bit     REG_DATA_LINE_FLAG_QUOTE_GC     ; A4C0
         bmi     LA4FE                           ; A4C2
         tax                                     ; A4C4
         sty     $49                             ; A4C5
         cmp     #$CC                            ; A4C7
         bcs     LA4D5                           ; A4C9
         ldy     #$C0                            ; A4CB
-        sty     $23                             ; A4CD
+        sty     TMP_BYTE_23                     ; A4CD
         ldy     #$9E                            ; A4CF
-        sty     $22                             ; A4D1
+        sty     TMP_BYTE_22                     ; A4D1
         bne     LA4E0                           ; A4D3
 LA4D5:  sbc     #$4C                            ; A4D5
         tax                                     ; A4D7
         ldy     #$A1                            ; A4D8
-        sty     $23                             ; A4DA
+        sty     TMP_BYTE_23                     ; A4DA
         ldy     #$BF                            ; A4DC
-        sty     $22                             ; A4DE
+        sty     TMP_BYTE_22                     ; A4DE
 LA4E0:  ldy     #$00                            ; A4E0
         asl     a                               ; A4E2
         beq     LA4F5                           ; A4E3
 LA4E5:  dex                                     ; A4E5
         bpl     LA4F4                           ; A4E6
-LA4E8:  inc     $22                             ; A4E8
+LA4E8:  inc     TMP_BYTE_22                     ; A4E8
         bne     LA4EE                           ; A4EA
-        inc     $23                             ; A4EC
-LA4EE:  lda     ($22),y                         ; A4EE
+        inc     TMP_BYTE_23                     ; A4EC
+LA4EE:  lda     (TMP_BYTE_22),y                 ; A4EE
         bpl     LA4E8                           ; A4F0
         bmi     LA4E5                           ; A4F2
 LA4F4:  iny                                     ; A4F4
-LA4F5:  lda     ($22),y                         ; A4F5
+LA4F5:  lda     (TMP_BYTE_22),y                 ; A4F5
         bmi     LA501                           ; A4F7
         jsr     LCB47                           ; A4F9
         bne     LA4F4                           ; A4FC
@@ -1263,7 +1278,8 @@ LA4FE:  jmp     LC6F3                           ; A4FE
 LA501:  jmp     LC6EF                           ; A501
 
 ; ----------------------------------------------------------------------------
-LA504:  jsr     CHRGET                          ; A504
+SE_EXECUTE_NEXT_COMMAND:
+        jsr     CHRGET                          ; A504
         cmp     #$CC                            ; A507
         bcc     LA524                           ; A509
         cmp     #$D7                            ; A50B
@@ -1340,11 +1356,11 @@ LA570:  jsr     RPACHK                          ; A570
 
 ; ----------------------------------------------------------------------------
 BASIC_VECTOR_PATCH:
-        .addr   LA3FD                           ; A58B
-        .addr   MAIN2                           ; A58D
-        .addr   LA407                           ; A58F
-        .addr   LA4BA                           ; A591
-        .addr   LA504                           ; A593
+        .addr   SE_PRINT_ERROR                  ; A58B
+        .addr   MAIN2_DEFAULT_MAIN_CMMAND_PROCESSOR; A58D
+        .addr   SE_TOKENIZER                    ; A58F
+        .addr   SE_LIST_PROGRAM                 ; A591
+        .addr   SE_EXECUTE_NEXT_COMMAND         ; A593
         .addr   SE_GET_VALUE_FROM_LINE          ; A595
 ; ----------------------------------------------------------------------------
 ; Load the Basic vector table with SuperExpander extensions:
@@ -1549,7 +1565,7 @@ LA6ED:  brk                                     ; A6ED
         .byte   $0C                             ; A6EE
         clc                                     ; A6EF
 LA6F0:  .byte   $04                             ; A6F0
-        asl     $08                             ; A6F1
+        asl     ENDCHR_SCAN_QUOTE               ; A6F1
         .byte   $0C                             ; A6F3
         bpl     LA70E                           ; A6F4
         jsr     L8040                           ; A6F6
@@ -1668,9 +1684,9 @@ LA7C8:  ldx     #$3C                            ; A7C8
         jsr     FRMEVL                          ; A7F3
         jsr     DELST                           ; A7F6
         sta     $033E                           ; A7F9
-        lda     $22                             ; A7FC
+        lda     TMP_BYTE_22                     ; A7FC
         sta     $033F                           ; A7FE
-        lda     $23                             ; A801
+        lda     TMP_BYTE_23                     ; A801
         sta     $0340                           ; A803
         lda     #$0E                            ; A806
 LA808:  bne     LA7C8                           ; A808
@@ -1794,20 +1810,20 @@ LA8D4:  lda     $2C                             ; A8D4
         bcs     LA943                           ; A8D8
         sec                                     ; A8DA
         jsr     MEMBOT                          ; A8DB
-        sty     $25                             ; A8DE
+        sty     TMP_BYTE_25                     ; A8DE
         lda     $2E                             ; A8E0
-        sbc     $25                             ; A8E2
+        sbc     TMP_BYTE_25                     ; A8E2
         clc                                     ; A8E4
         adc     #$20                            ; A8E5
         sta     $9C                             ; A8E7
-        sta     $25                             ; A8E9
+        sta     TMP_BYTE_25                     ; A8E9
         lda     $2D                             ; A8EB
-        sta     $24                             ; A8ED
+        sta     TMP_BYTE_24                     ; A8ED
         sec                                     ; A8EF
         lda     $37                             ; A8F0
-        sbc     $24                             ; A8F2
+        sbc     TMP_BYTE_24                     ; A8F2
         lda     $38                             ; A8F4
-        sbc     $25                             ; A8F6
+        sbc     TMP_BYTE_25                     ; A8F6
         bcs     LA8FD                           ; A8F8
 LA8FA:  jmp     LA0B9                           ; A8FA
 
@@ -1818,7 +1834,7 @@ LA8FD:  ldy     #$00                            ; A8FD
 LA903:  lda     ($2D),y                         ; A903
         sta     (PRTY),y                        ; A905
         iny                                     ; A907
-        cpy     $24                             ; A908
+        cpy     TMP_BYTE_24                     ; A908
         bcc     LA903                           ; A90A
         beq     LA903                           ; A90C
 LA90E:  dec     $2E                             ; A90E
@@ -1832,16 +1848,16 @@ LA91A:  lda     ($2D),y                         ; A91A
         iny                                     ; A91E
         bne     LA91A                           ; A91F
         beq     LA90E                           ; A921
-LA923:  lda     $24                             ; A923
+LA923:  lda     TMP_BYTE_24                     ; A923
         sta     $2D                             ; A925
-        lda     $25                             ; A927
+        lda     TMP_BYTE_25                     ; A927
         sta     $2E                             ; A929
         sec                                     ; A92B
-        lda     $7B                             ; A92C
+        lda     BASIC_PTR_HIGH                  ; A92C
         sbc     $2C                             ; A92E
         clc                                     ; A930
         adc     #$20                            ; A931
-        sta     $7B                             ; A933
+        sta     BASIC_PTR_HIGH                  ; A933
         lda     #$20                            ; A935
         sta     $2C                             ; A937
         jsr     LNKPRG                          ; A939
@@ -1864,16 +1880,16 @@ LA94F:  sec                                     ; A94F
         sta     $37                             ; A961
         lda     #$00                            ; A963
         beq     LA9A9                           ; A965
-LA967:  sty     $25                             ; A967
+LA967:  sty     TMP_BYTE_25                     ; A967
         sty     $9C                             ; A969
         lda     $2B                             ; A96B
         sta     $26                             ; A96D
         sec                                     ; A96F
-        lda     $7B                             ; A970
+        lda     BASIC_PTR_HIGH                  ; A970
         sbc     $2C                             ; A972
         clc                                     ; A974
-        adc     $25                             ; A975
-        sta     $7B                             ; A977
+        adc     TMP_BYTE_25                     ; A975
+        sta     BASIC_PTR_HIGH                  ; A977
         ldy     #$00                            ; A979
         sty     PRTY                            ; A97B
         sty     $2B                             ; A97D
@@ -1893,7 +1909,7 @@ LA993:  lda     $9C                             ; A993
         sta     $2E                             ; A995
         lda     $26                             ; A997
         sta     $2B                             ; A999
-        lda     $25                             ; A99B
+        lda     TMP_BYTE_25                     ; A99B
         sta     $2C                             ; A99D
         jsr     LNKPRG                          ; A99F
         jsr     LC660                           ; A9A2
@@ -2068,7 +2084,7 @@ LAAE4:  sta     ($C3),y                         ; AAE4
 ; ----------------------------------------------------------------------------
         jsr     LAF34                           ; AAE7
 LAAEA:  jsr     LAB7E                           ; AAEA
-        dec     $24                             ; AAED
+        dec     TMP_BYTE_24                     ; AAED
         bne     LAAEA                           ; AAEF
         rts                                     ; AAF1
 
@@ -2104,10 +2120,10 @@ LAB08:  sta     (PRTY),y                        ; AB08
 ; ----------------------------------------------------------------------------
         jsr     LAF34                           ; AB23
         jsr     LAC0B                           ; AB26
-        dec     $24                             ; AB29
+        dec     TMP_BYTE_24                     ; AB29
         beq     LAB34                           ; AB2B
 LAB2D:  jsr     LAC11                           ; AB2D
-        dec     $24                             ; AB30
+        dec     TMP_BYTE_24                     ; AB30
         bne     LAB2D                           ; AB32
 LAB34:  rts                                     ; AB34
 
@@ -2412,7 +2428,7 @@ LAD72:  lda     $02CD                           ; AD72
         and     #$08                            ; AD75
         beq     LAD7A                           ; AD77
         dex                                     ; AD79
-LAD7A:  stx     $24                             ; AD7A
+LAD7A:  stx     TMP_BYTE_24                     ; AD7A
         jsr     LAF48                           ; AD7C
         bne     LAD71                           ; AD7F
         jsr     LAF3F                           ; AD81
@@ -2502,7 +2518,7 @@ LAE24:  jsr     LABE5                           ; AE24
         lda     $63                             ; AE27
         and     #$07                            ; AE29
         tax                                     ; AE2B
-        bit     $24                             ; AE2C
+        bit     TMP_BYTE_24                     ; AE2C
         bmi     LAE36                           ; AE2E
         lda     LAFE7,x                         ; AE30
         and     (PRTY),y                        ; AE33
@@ -2515,7 +2531,7 @@ LAE36:  lda     LAFEF,x                         ; AE36
 
 ; ----------------------------------------------------------------------------
 LAE3C:  inc     $63                             ; AE3C
-        bit     $24                             ; AE3E
+        bit     TMP_BYTE_24                     ; AE3E
         bpl     LAE44                           ; AE40
         inc     $63                             ; AE42
 LAE44:  rts                                     ; AE44
@@ -2523,7 +2539,7 @@ LAE44:  rts                                     ; AE44
 ; ----------------------------------------------------------------------------
 LAE45:  dec     $63                             ; AE45
         dec     $63                             ; AE47
-        bit     $24                             ; AE49
+        bit     TMP_BYTE_24                     ; AE49
         bpl     LAE51                           ; AE4B
         dec     $63                             ; AE4D
         dec     $63                             ; AE4F
@@ -2531,7 +2547,7 @@ LAE51:  rts                                     ; AE51
 
 ; ----------------------------------------------------------------------------
 LAE52:  ldx     #$19                            ; AE52
-        jmp     LA3FD                           ; AE54
+        jmp     SE_PRINT_ERROR                  ; AE54
 
 ; ----------------------------------------------------------------------------
         lda     $02C8                           ; AE57
@@ -2656,7 +2672,7 @@ LAF22:  sta     $02C3,x                         ; AF22
         jmp     SETSLINK                        ; AF31
 
 ; ----------------------------------------------------------------------------
-LAF34:  sta     $24                             ; AF34
+LAF34:  sta     TMP_BYTE_24                     ; AF34
         iny                                     ; AF36
         lda     ($C3),y                         ; AF37
 LAF39:  and     #$03                            ; AF39

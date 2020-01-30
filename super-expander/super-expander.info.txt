@@ -18,7 +18,7 @@ GLOBAL {
 };
 
 # Stack
-LABEL { NAME "Stack";                ADDR  $100 ;  SIZE 255;  };
+#LABEL { NAME "Stack";                ADDR  $100 ;  SIZE 255;  };
 LABEL { NAME "Start_A000";           ADDR $A000 ;  SIZE 1;  };
 LABEL { NAME "Main_EntryPoint_A044"; ADDR $A044 ;  SIZE 1;  };
 
@@ -39,7 +39,6 @@ RANGE  { START $A182;     END $A1BD; TYPE Code;      };
 # near A214 but decoding it led to bizzare disasebly
 RANGE { START $A1BE;    END   $A234; TYPE TEXTTABLE; };
 
-LABEL { ADDR $A1BE; NAME "KEYWORD_DATA_OFFSET"; COMMENT "DATA Offset unkown usage";};
 
 
 
@@ -68,4 +67,5 @@ LABEL { ADDR $A597; NAME "BASIC_VECTOR_PATCH" ; COMMENT "Load the Basic vector t
 
 ASMINC { 
     FILE "./jj_vic_rom.inc" ;
+    IGNOREUNKNOWN false;
 };
