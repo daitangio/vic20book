@@ -14,7 +14,7 @@ GLOBAL {
     STARTADDR       $A000;              
     PAGELENGTH      0;                  # No paging
     CPU             "6502";
-    COMMENTS        0; #Use 2
+    COMMENTS        2; #Use 2
 };
 
 # Stack
