@@ -5,13 +5,16 @@
 # This file is able to decode the super expander cartridge
 # giving a meaning at least of the boot procedure
 
+# Undefined RANGE are Code by default: refarin defining it
+
 GLOBAL {
     OUTPUTNAME      "superexpander-source.s";
-    INPUTNAME       "Super%20Expander.prg";
+    INPUTNAME       "SuperExpander.prg";
     INPUTOFFS       2; # file has two byte at the head for the relocation address, so we skip first two bytes
     STARTADDR       $A000;              
     PAGELENGTH      0;                  # No paging
     CPU             "6502";
+    COMMENTS        0; #Use 2
 };
 
 # Stack
@@ -19,29 +22,49 @@ LABEL { NAME "Stack";                ADDR  $100 ;  SIZE 255;  };
 LABEL { NAME "Start_A000";           ADDR $A000 ;  SIZE 1;  };
 LABEL { NAME "Main_EntryPoint_A044"; ADDR $A044 ;  SIZE 1;  };
 
-RANGE { START $A044;    END   $A1bd; TYPE Code;      };
-
-# GG: tis range contains text but seems also to contain vectors
-# near a214 but decoding it led to bizzare disasebly
-RANGE { START $A1be;    END   $A234; TYPE TEXTTABLE; };
-
-#RANGE { START $A1be;    END   $A213; TYPE TEXTTABLE; };
-#RANGE { START $A214;    END   $a215; TYPE ADDRTABLE; };
-#RANGE { START $A216;    END   $A234; TYPE TEXTTABLE; };
-
-RANGE { START $A235;    END   $A58A; TYPE Code;      };
-# Vector table 
-RANGE { START $A58B;    END   $A596; TYPE ADDRTABLE; };
-RANGE { START $A597;    END   $AFFF; TYPE Code;      };
-
-LABEL { ADDR $A597; NAME "LA597" ; COMMENT "Load the Basic vector table with SuperExpander extensions:" ; };
-
-
 RANGE { START $A000 ;    END $A001;   TYPE ADDRTABLE; };
 # A0CBM called XROMID
-RANGE { START $A004 ;    END $A008;   TYPE BYTETABLE; };
-
+RANGE { START $A004 ;    END $A008;   TYPE TEXTTABLE; };
 RANGE { START $A009 ;    END $A043;   TYPE TEXTTABLE; };
+
+
+RANGE { START $A044;    END   $A17A; TYPE Code;      };
+
+
+LABEL  {  ADDR $A17C;     NAME "A17C_UNKNOWN_VECTOR" ; COMMENT "Automodifing code in A17C?" ; };
+RANGE  { START $A17B;     END $A181;  TYPE CODE; }; # ? ADDRTABLE
+RANGE  { START $A182;     END $A1BD; TYPE Code;      };
+
+# GG: tis range contains text but seems also to contain vectors
+# near A214 but decoding it led to bizzare disasebly
+RANGE { START $A1BE;    END   $A234; TYPE TEXTTABLE; };
+
+LABEL { ADDR $A1BE; NAME "KEYWORD_DATA_OFFSET"; COMMENT "DATA Offset unkown usage";};
+
+
+
+# A2C8 is an entry point. RANGE A2A2-A2C7 seems unused data
+RANGE { START $A2A2;    END $A2C7; TYPE TEXTTABLE; };
+LABEL { ADDR $A2A2;     NAME "LA2A2"; COMMENT "?Unused area?";};
+
+RANGE { START $A366;    END   $A371; TYPE BYTETABLE; };
+RANGE { START $A372;    END   $A58A; TYPE Code;      };
+
+# Vector table 
+RANGE { START $A58B;    END   $A596; TYPE ADDRTABLE; };
+
+
+# Model LA5D1:  bit     $02A6
+RANGE { START $A5D1; END $A5D1; TYPE BYTETABLE;};
+LABEL { ADDR  $A5D1; NAME "LA5D1_entry_point"; COMMENT "Skip ldx load";};
+
+LABEL { ADDR  $AFB1;    NAME "UNKNOWN_DATA_TAIL_AREA";  };
+RANGE { START $AFB1;    END   $AFFF; TYPE TEXTTABLE;    };
+
+
+LABEL { ADDR $A597; NAME "BASIC_VECTOR_PATCH" ; COMMENT "Load the Basic vector table with SuperExpander extensions:" ; };
+
+
 
 ASMINC { 
     FILE "./jj_vic_rom.inc" ;

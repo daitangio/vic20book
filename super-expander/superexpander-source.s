@@ -1,6 +1,6 @@
-; da65 V2.16 - Ubuntu 2.16-2
-; Created:    2020-01-28 23:24:38
-; Input file: Super%20Expander.prg
+; da65 V2.18 - Git 6efb71be
+; Created:    2020-01-30 16:50:54
+; Input file: SuperExpander.prg
 ; Page:       1
 
 
@@ -28,9 +28,7 @@ LIST_PROGRAM_VECTOR:= $0306
 EXECUTE_NEXT_COMMAND_VECTOR:= $0308
 GET_VALUE_FROM_LINE_VECTOR:= $030A
 L0316           := $0316
-L0810           := $0810
 L4559           := $4559
-L60C0           := $60C0
 L8040           := $8040
 VICCR0          := $9000
 VICCR1          := $9001
@@ -74,8 +72,6 @@ VIA2PCR         := $912C
 VIA2IFR         := $912D
 VIA2IER         := $912E
 VIA2PA2         := $912F
-LB000           := $B000
-LB01B           := $B01B
 COLDST          := $C000
 WARMST          := $C002
 STMDSP          := $C00C
@@ -602,7 +598,8 @@ Start_A000:
 XROMWARM:
         .byte   $77
         .byte   $A0
-XROMID: .byte   $41,$30,$C3,$C2,$CD
+XROMID: .byte   "A0"
+        .byte   $C3,$C2,$CD
 LA009:  .byte   $01,$03,$05,$07,$02,$04,$06,$08
 LA011:  .byte   $07
         .byte   "GRAPHIC"
@@ -646,7 +643,7 @@ LA063:  iny
         lda     #$00
         sta     $02C8
         cli
-        jmp     LA597
+        jmp     BASIC_VECTOR_PATCH
 
         bit     VIA1PA1
         jsr     FUDTIM
@@ -786,7 +783,7 @@ LA172:  dec     PRTY
         rts
 
 LA17B:
-LA17C           := * + 1
+A17C_UNKNOWN_VECTOR:= * + 1                     ; Automodifing code in A17C?
         lda     PTR1
 LA17D:  sta     PTR2
         beq     LA1B0
@@ -827,7 +824,7 @@ LA1B5:  dex
         adc     (SX_PTR__LOW),y
         adc     #$01
         tay
-LA1BE           := * + 1
+KEYWORD_DATA_OFFSET:= * + 1                     ; DATA Offset unkown usage
         bne     LA1B5
 LA1BF:  .byte   "KE"
         .byte   $D9
@@ -928,34 +925,21 @@ LA24A:  sta     ($C3),y
         sta     $0290
         rts
 
-        .byte   $72
-        .byte   $A3
-        .byte   $C2
-        ldx     #$AD
-        inc     FOPEN,x
-        lsr     a
-        .byte   $F3
-        .byte   $C7
-        .byte   $F2
-LA2AF           := * + 1
-        ora     #$F3
-        .byte   $F3
-        .byte   $F3
-        sta     $A3,x
-        ldx     $A3
-        bvs     LA2AF
-        sbc     $F1,x
-        .byte   $EF
-        .byte   $F3
-        .byte   $C2
-        ldx     #$49
-        sbc     $85,x
-        inc     $20,x
-        sec
-        ldx     #$6C
-        .byte   $02
-LA2C8           := * + 1
-        cpy     #$48
+; ?Unused area?
+LA2A2:  .byte   "r"
+        .byte   $A3,$C2,$A2,$AD,$FE,$0A,$F4
+        .byte   "J"
+        .byte   $F3,$C7,$F2,$09,$F3,$F3,$F3,$95
+        .byte   $A3,$A6,$A3
+        .byte   "p"
+        .byte   $F7,$F5,$F1,$EF,$F3,$C2,$A2
+        .byte   "I"
+        .byte   $F5,$85,$F6
+        .byte   " 8"
+        .byte   $A2
+        .byte   "l"
+        .byte   $02,$C0
+LA2C8:  pha
         sta     $D7
         txa
         pha
@@ -1034,18 +1018,8 @@ LA346:  cmp     $C5
         sty     $02A3
 LA363:  jmp     LEBD6
 
-LA366:  .byte   $27
-        .byte   $2F
-        .byte   $37
-        .byte   $3F
-LA36A:  brk
-        .byte   $04
-        .byte   $04
-        .byte   $04
-        brk
-        .byte   $04
-        .byte   $04
-        .byte   $04
+LA366:  .byte   $27,$2F,$37,$3F
+LA36A:  .byte   $00,$04,$04,$04,$00,$04,$04,$04
 LA372:  ldx     $02A4
         beq     LA38F
         ldy     $02A3
@@ -1058,7 +1032,7 @@ LA372:  ldx     $02A4
         inc     $02A3
         dec     $02A4
         bpl     LA372
-LA38F:  jsr     LA5D1
+LA38F:  jsr     LA5D1_entry_point
         jmp     IRQ
 
         lda     $99
@@ -1207,7 +1181,7 @@ LA49F:  bne     LA4A3
 LA4A3:  ldx     $7A
         inc     $0B
 LA4A7:  iny
-        lda     LA1BE,y
+        lda     KEYWORD_DATA_OFFSET,y
         bpl     LA4A7
         lda     LA1BF,y
         bne     LA494
@@ -1313,7 +1287,7 @@ LA56A:  jsr     LPACHK
 LA570:  jsr     RPACHK
         pla
         tay
-        lda     LA17C,y
+        lda     A17C_UNKNOWN_VECTOR,y
         sta     $55
         lda     LA17D,y
         sta     $56
@@ -1330,7 +1304,8 @@ BASIC_VECTOR_PATCH:
         .addr   LA504
         .addr   SE_GET_VALUE_FROM_LINE
 ; Load the Basic vector table with SuperExpander extensions:
-LA597:  ldx     #$0B
+BASIC_VECTOR_PATCH:
+        ldx     #$0B
 LA599:  lda     BASIC_VECTOR_PATCH,x
         sta     PRINT_ERROR_MESSAGE_VECTOR,x
         dex
@@ -1362,7 +1337,10 @@ LA5A5:  stx     $C3
         cli
 LA5D0:  rts
 
-LA5D1:  bit     $02A6
+; Skip ldx load
+LA5D1_entry_point:
+        .byte   $2C
+        ldx     $02
         bpl     LA601
         ldx     #$06
 LA5D8:  lda     $02AD,x
@@ -2161,7 +2139,7 @@ LABE5:  lda     $63
         lsr     a
 LABFA:  lsr     a
         tax
-        lda     LAFB1,x
+        lda     UNKNOWN_DATA_TAIL_AREA,x
         sta     PTR1
         lda     $0288
         and     #$03
@@ -2498,8 +2476,8 @@ LAEA5:  and     #$3F
 LAEA7:  ldy     #$10
         sty     PTR2
         rol     a
-LAEAD           := * + 1
-        rol     PTR2
+        .byte   $26
+LAEAD:  .byte   $9F
         rol     a
         rol     PTR2
         rol     a
@@ -2642,59 +2620,36 @@ LAFA4:  asl     a
 LAFAD:  inc     $02D7
         rts
 
-LAFB1:  brk
-        .byte   $14
-        plp
-        .byte   $3C
-        bvc     LB01B
-        sei
-        sty     $B4A0
-LAFBB:  brk
-        ldy     #$40
-        cpx     #$80
-        jsr     L60C0
-        brk
-        ldy     #$40
-        cpx     #$80
-        jsr     L60C0
-        brk
-        ldy     #$40
-LAFCF           := * + 1
-        cpx     #$10
-        bpl     LAFE3
-        ora     ($12),y
-        .byte   $13
-        .byte   $13
-        .byte   $14
-        ora     $15,x
-        asl     $16,x
-        .byte   $17
-        clc
-        clc
-        ora     $1A1A,y
-        .byte   $1B
-        .byte   $1B
-LAFE3:  brk
-        php
-        brk
-        brk
+UNKNOWN_DATA_TAIL_AREA:
+        .byte   $00,$14
+        .byte   "(<Pdx"
+        .byte   $8C,$A0,$B4
+LAFBB:  .byte   $00,$A0
+        .byte   "@"
+        .byte   $E0,$80
+        .byte   " "
+        .byte   $C0
+        .byte   "`"
+        .byte   $00,$A0
+        .byte   "@"
+        .byte   $E0,$80
+        .byte   " "
+        .byte   $C0
+        .byte   "`"
+        .byte   $00,$A0
+        .byte   "@"
+        .byte   $E0
+LAFCF:  .byte   $10,$10,$11,$11,$12,$13,$13,$14
+        .byte   $15,$15,$16,$16,$17,$18,$18,$19
+        .byte   $1A,$1A,$1B,$1B
+LAFE3:  .byte   $00,$08,$00,$00
 LAFE7:  .byte   $80
-        rti
-
-        jsr     L0810
-        .byte   $04
-        .byte   $02
-LAFEF           := * + 1
-        ora     ($C0,x)
-        cpy     #$30
-        bmi     LB000
-        .byte   $0C
-        .byte   $03
-        .byte   $03
-LAFF7:  brk
-        eor     $AA,x
-        .byte   $FF
-LAFFB:  .byte   $02
-        ora     $FE
-        .byte   $E7
-        asl     a
+        .byte   "@ "
+        .byte   $10,$08,$04,$02,$01
+LAFEF:  .byte   $C0,$C0
+        .byte   "00"
+        .byte   $0C,$0C,$03,$03
+LAFF7:  .byte   $00
+        .byte   "U"
+        .byte   $AA,$FF
+LAFFB:  .byte   $02,$05,$FE,$E7,$0A
