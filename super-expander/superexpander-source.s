@@ -1,5 +1,5 @@
 ; da65 V2.16 - Ubuntu 2.16-2
-; Created:    2020-01-30 21:52:23
+; Created:    2020-01-30 22:15:30
 ; Input file: SuperExpander.prg
 ; Page:       1
 
@@ -156,7 +156,7 @@ LC6EF           := $C6EF
 LC6F3           := $C6F3
 QPLOP           := $C71A
 FOR             := $C742
-NEWSTT          := $C7AE
+NEWSTT_BASIC_LOOP_C7AE:= $C7AE
 GONE            := $C7E4
 LC7E7           := $C7E7
 RESTORE         := $C81D
@@ -1285,7 +1285,7 @@ SE_EXECUTE_NEXT_COMMAND:
         cmp     #$D7                            ; A50B
         bcs     LA524                           ; A50D
         jsr     LA515                           ; A50F
-        jmp     NEWSTT                          ; A512
+        jmp     NEWSTT_BASIC_LOOP_C7AE          ; A512
 
 ; ----------------------------------------------------------------------------
 LA515:  sbc     #$CB                            ; A515
@@ -1971,7 +1971,7 @@ LAA0B:  sta     (PRTY),y                        ; AA0B
         bne     LAA08                           ; AA1A
 LAA1C:  lda     $C3                             ; AA1C
         bne     LAA28                           ; AA1E
-        jmp     NEWSTT                          ; AA20
+        jmp     NEWSTT_BASIC_LOOP_C7AE          ; AA20
 
 ; ----------------------------------------------------------------------------
         lda     $02C8                           ; AA23
